@@ -6,6 +6,17 @@ import { useLockBody } from "../hooks/hooks";
 import { demos } from "./AILab";
 import { GithubIcon, LinkedinIcon } from "./ui";
 
+/** Open an external link through a real anchor (window.open is blocked in some embedded viewers). */
+function openLink(href: string) {
+  const a = document.createElement("a");
+  a.href = href;
+  a.target = "_blank";
+  a.rel = "noopener noreferrer";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+
 type Item = { id: string; group: string; label: string; hint?: string; icon: ReactNode; run: () => void };
 
 export default function CommandPalette({
@@ -72,12 +83,12 @@ export default function CommandPalette({
         label: "Copy email address",
         hint: profile.email,
         icon: <Copy className="size-4" />,
-        run: () => navigator.clipboard?.writeText(profile.email),
+        run: () => void navigator.clipboard?.writeText(profile.email).catch(() => {}),
       },
       { id: "theme", group: "Actions", label: "Toggle light / dark theme", icon: <Moon className="size-4" />, run: onToggleTheme },
       { id: "mail", group: "Links", label: "Send an email", icon: <Mail className="size-4" />, run: () => (window.location.href = `mailto:${profile.email}`) },
-      { id: "gh", group: "Links", label: "GitHub", icon: <GithubIcon className="size-4" />, run: () => window.open(profile.socials.github, "_blank", "noopener") },
-      { id: "li", group: "Links", label: "LinkedIn", icon: <LinkedinIcon className="size-4" />, run: () => window.open(profile.socials.linkedin, "_blank", "noopener") },
+      { id: "gh", group: "Links", label: "GitHub", icon: <GithubIcon className="size-4" />, run: () => openLink(profile.socials.github) },
+      { id: "li", group: "Links", label: "LinkedIn", icon: <LinkedinIcon className="size-4" />, run: () => openLink(profile.socials.linkedin) },
     ];
   }, [onAsk, onOpenProject, onToggleTheme, onOpenRecruiter]);
 

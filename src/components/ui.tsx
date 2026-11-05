@@ -85,8 +85,9 @@ export function Reveal({
   return (
     <motion.div
       className={className}
-      initial={reduce ? false : { opacity: 0, y }}
-      whileInView={{ opacity: 1, y: 0 }}
+      // Content stays visible at rest (thumbnails, link previews, no-JS crawlers); only a small slide animates in.
+      initial={reduce ? false : { y }}
+      whileInView={{ y: 0 }}
       viewport={{ once: true, margin: "-60px" }}
       transition={{ duration: 0.6, delay, ease: [0.22, 1, 0.36, 1] }}
     >
