@@ -13,6 +13,8 @@ Built with **React 19 + TypeScript + Vite + Tailwind CSS v4 + Motion**. It's a f
 | **AI Lab · guardrail playground** | Try to jailbreak a mini LLM gateway: live scanning for prompt injection, jailbreaks, system-prompt extraction, PII/secrets (with redaction), unsafe tool calls and base64-smuggled payloads, each mapped to the OWASP Top 10 for LLM Applications. |
 | **AI Lab · Agent workbench** | A tool-using agent drawn as a LangGraph-style graph: guardrail → planner → tools (`search_portfolio`, `skill_lookup`, `fit_check`, `get_contact`) → synthesize. Nodes light up as it runs, with a full execution trace. The planner is rule-based; the tools are real. |
 | **AI Lab · Chunking lab** | Recursive / sentence / fixed / paragraph chunking with size and overlap sliders, chunks highlighted in the document, and BM25 retrieval over the chunks to show how chunking changes what gets retrieved. |
+| **AI Lab · Hallucination checker** | Paste a source and an answer: every claim is checked for coverage by one or two source sentences, and every number and name must appear in the source (acronyms like RAG match their expansion). Gives a faithfulness score with evidence links. |
+| **AI Lab · Evals lab** | Drag a decision threshold over synthetic detector scores and watch precision, recall, F1 and false positives move, with a mirrored histogram, confusion matrix, PR curve and "max F1 / catch 95% / ≤1% FP" presets. |
 | **AI Lab · Decoding lab** | Temperature, top-k and top-p applied to a next-token distribution (real softmax + nucleus math, illustrative logits), with sampling and entropy. |
 | **AI Lab · Matchmaking engine** | Two-stage recommender modeled on Nudr: cosine retrieval → re-rank on distance and recency (adjustable weights) → likes/skips update a preference vector shown as a radar. Synthetic profiles. |
 | **AI Lab · Live failure prediction** | Streaming sensor charts (10 Hz) with fault injection, rolling-window features, a failure-risk score and an event log, modeled on the CNC project. |
@@ -73,6 +75,7 @@ src/
   lib/guardrail.ts         ← mini LLM gateway: detectors, OWASP mapping, redaction
   lib/agent.ts             ← graph agent: planner + tools built on the engines above
   lib/chunk.ts             ← chunking strategies + BM25 over chunks
+  lib/grounding.ts         ← claim-level grounding / hallucination check
   components/
     Hero.tsx               ← typewriter, CTAs, agent-trace terminal
     AgentTrace.tsx         ← animated LLM pipeline traces
@@ -80,8 +83,8 @@ src/
     About.tsx              ← stats counters, summary, code card, focus areas
     Experience.tsx         ← timeline with expandable project rows
     Projects.tsx           ← filterable project grid
-    AILab.tsx              ← lab launcher (7 playgrounds, lazy-loaded; deep links via #lab/<id>)
-    lab/*.tsx              ← AgentLab, GuardrailLab, RagLab, ChunkLab, DecodeLab, RecsysLab, StreamLab
+    AILab.tsx              ← lab launcher (9 playgrounds, lazy-loaded; deep links via #lab/<id>)
+    lab/*.tsx              ← AgentLab, GuardrailLab, GroundingLab, RagLab, ChunkLab, DecodeLab, EvalLab, RecsysLab, StreamLab
     FitCheck.tsx           ← paste-a-JD fit report
     RecruiterView.tsx      ← 30-second recruiter panel
     ProjectModal.tsx       ← case study + architecture diagram

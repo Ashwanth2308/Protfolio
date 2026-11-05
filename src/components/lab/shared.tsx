@@ -1,5 +1,5 @@
 import { Info } from "lucide-react";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 
 export function useMediaQuery(q: string) {
   const [match, setMatch] = useState(() => typeof window !== "undefined" && window.matchMedia(q).matches);
@@ -115,4 +115,18 @@ export function Chip({ active, onClick, children }: { active?: boolean; onClick:
       {children}
     </button>
   );
+}
+
+/** Width of an element, kept in sync with ResizeObserver (for pixel-exact SVG charts). */
+export function useWidth<T extends HTMLElement>(initial = 600) {
+  const ref = useRef<T>(null);
+  const [w, setW] = useState(initial);
+  useLayoutEffect(() => {
+    if (!ref.current) return;
+    setW(ref.current.getBoundingClientRect().width);
+    const ro = new ResizeObserver(([e]) => setW(e.contentRect.width));
+    ro.observe(ref.current);
+    return () => ro.disconnect();
+  }, []);
+  return [ref, w] as const;
 }
