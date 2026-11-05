@@ -17,6 +17,8 @@ export default function NeuralBackground({ className = "" }: { className?: strin
     if (!ctx) return;
 
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const coarse = window.matchMedia("(pointer: coarse)").matches; // phones/tablets: lighter animation
+    let last = 0;
     let w = 0;
     let h = 0;
     let nodes: Node[] = [];
@@ -42,7 +44,7 @@ export default function NeuralBackground({ className = "" }: { className?: strin
       canvas!.width = Math.floor(w * dpr);
       canvas!.height = Math.floor(h * dpr);
       ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
-      const target = Math.min(95, Math.max(28, Math.floor((w * h) / 15000)));
+      const target = coarse ? Math.min(32, Math.max(18, Math.floor((w * h) / 22000))) : Math.min(95, Math.max(28, Math.floor((w * h) / 15000)));
       nodes = Array.from({ length: target }, () => ({
         x: Math.random() * w,
         y: Math.random() * h,
@@ -56,7 +58,12 @@ export default function NeuralBackground({ className = "" }: { className?: strin
     const LINK = 130;
     const MOUSE = 170;
 
-    function frame() {
+    function frame(now = 0) {
+      if (coarse && !reduce && now - last < 33) {
+        if (visible) raf = requestAnimationFrame(frame); // ~30 fps on touch devices
+        return;
+      }
+      last = now;
       ctx!.clearRect(0, 0, w, h);
       const alphaScale = colors.light ? 0.55 : 1;
 
@@ -127,10 +134,20 @@ export default function NeuralBackground({ className = "" }: { className?: strin
       raf = requestAnimationFrame(frame);
     }
 
-    resize();
-    start();
+    // Start after the page is interactive so the canvas never competes with the first render.
+    let booted = false;
+    const boot = () => {
+      if (booted) return;
+      booted = true;
+      resize();
+      start();
+    };
+    const w0 = window as Window & { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number };
+    if (w0.requestIdleCallback) w0.requestIdleCallback(boot, { timeout: 1200 });
+    else window.setTimeout(boot, 300);
 
     const onResize = () => {
+      if (!booted) return;
       resize();
       if (reduce) frame();
     };
@@ -143,12 +160,12 @@ export default function NeuralBackground({ className = "" }: { className?: strin
     const onLeave = () => (mouse.active = false);
     const onVis = () => {
       visible = !document.hidden;
-      if (visible) start();
+      if (visible && booted) start();
     };
 
     const io = new IntersectionObserver(([entry]) => {
       visible = entry.isIntersecting && !document.hidden;
-      if (visible) start();
+      if (visible && booted) start();
     });
     io.observe(canvas);
 

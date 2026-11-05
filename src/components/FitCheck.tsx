@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { profile } from "../data/portfolio";
 import { useCopy } from "../hooks/hooks";
 import { analyzeJD, reportToText, sampleJDs, type FitReport } from "../lib/fit";
+import { track } from "../lib/analytics";
 import { Reveal, Section } from "./ui";
 
 const stages = ["Extracting skills", "Mapping to evidence", "Scoring coverage"];
@@ -22,8 +23,10 @@ export default function FitCheck() {
     if (!text.trim()) return;
     timers.current.forEach(clearTimeout);
     setReport(null);
+    const r = analyzeJD(text);
+    track("fit_check", { score: r.score, verdict: r.verdict });
     if (reduce) {
-      setReport(analyzeJD(text));
+      setReport(r);
       return;
     }
     setStage(0);
@@ -32,7 +35,7 @@ export default function FitCheck() {
       window.setTimeout(() => setStage(2), 760),
       window.setTimeout(() => {
         setStage(-1);
-        setReport(analyzeJD(text));
+        setReport(r);
       }, 1150),
     ];
   };

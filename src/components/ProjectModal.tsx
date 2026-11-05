@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from "motion/react";
-import { ArrowLeft, ArrowRight, ArrowUpRight, Sparkles, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, ArrowUpRight, CircleCheck, GitBranch, Lightbulb, Sparkles, X } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { projects } from "../data/portfolio";
 import { useLockBody } from "../hooks/hooks";
@@ -106,6 +106,50 @@ export default function ProjectModal({ id, onClose, onNavigate }: { id: string |
                     </li>
                   ))}
                 </ul>
+
+                {p.decisions && p.decisions.length > 0 && (
+                  <>
+                    <h4 className="mt-10 mb-4 font-mono text-[11px] uppercase tracking-[0.2em] text-subtle">Key decisions</h4>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      {p.decisions.map((d) => (
+                        <div key={d.title} className="rounded-xl border border-line bg-card p-4">
+                          <div className="flex items-center gap-2 text-sm font-medium text-fg">
+                            <GitBranch className="size-4 shrink-0 text-accent" /> {d.title}
+                          </div>
+                          <p className="mt-1.5 text-sm leading-relaxed text-muted">{d.body}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
+
+                {p.results && p.results.length > 0 && (
+                  <>
+                    <h4 className="mt-10 mb-4 font-mono text-[11px] uppercase tracking-[0.2em] text-subtle">Results</h4>
+                    <ul className="space-y-2">
+                      {p.results.map((r) => (
+                        <li key={r} className="flex gap-3 text-sm leading-relaxed text-fg">
+                          <CircleCheck className="mt-0.5 size-4 shrink-0 text-ok" />
+                          <span>{r}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                )}
+
+                {p.lessons && p.lessons.length > 0 && (
+                  <>
+                    <h4 className="mt-10 mb-4 font-mono text-[11px] uppercase tracking-[0.2em] text-subtle">What I'd do differently</h4>
+                    <ul className="space-y-2">
+                      {p.lessons.map((l) => (
+                        <li key={l} className="flex gap-3 text-sm leading-relaxed text-muted">
+                          <Lightbulb className="mt-0.5 size-4 shrink-0 text-warn" />
+                          <span>{l}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                )}
 
                 <h4 className="mt-10 mb-4 font-mono text-[11px] uppercase tracking-[0.2em] text-subtle">Stack</h4>
                 <div className="flex flex-wrap gap-2">

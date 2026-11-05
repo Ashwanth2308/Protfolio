@@ -1,0 +1,21 @@
+name = "portfolio-chat"
+main = "src/index.ts"
+compatibility_date = "2026-10-01"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+# Add your deployed site's origin here, e.g. "https://ashwanth.dev,http://localhost:5173"
+ALLOWED_ORIGINS = "http://localhost:5173,http://localhost:4173"
+MODEL = "claude-opus-5-5"
+EFFORT = "low"
+MAX_TOKENS = "1024"
+PER_MINUTE_LIMIT = "6"
+DAILY_LIMIT = "300"
+
+# Optional: a daily cap shared across all Worker instances.
+# Create one with `npx wrangler kv namespace create CHAT_KV`, then uncomment:
+# [[kv_namespaces]]
+# binding = "CHAT_KV"
+# id = "<your KV namespace id>"
+
+# Secret (never commit it):  npx wrangler secret put ANTHROPIC_API_KEY

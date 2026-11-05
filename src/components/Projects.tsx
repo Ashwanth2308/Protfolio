@@ -61,7 +61,7 @@ export default function Projects({ onOpen }: { onOpen: (id: string) => void }) {
                 )}
                 {filter !== f && <span className="absolute inset-0 -z-10 rounded-full border border-line bg-card" />}
                 {f}
-                <span className={`ml-1.5 font-mono text-[11px] ${filter === f ? "opacity-70" : "text-subtle"}`}>{counts[f]}</span>
+                <span className={`ml-1.5 font-mono text-[11px] ${filter === f ? "" : "text-subtle"}`}>{counts[f]}</span>
               </button>
             ))}
           </div>

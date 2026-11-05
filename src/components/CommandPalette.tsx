@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { extraSections, navLinks, profile, projects } from "../data/portfolio";
 import { useLockBody } from "../hooks/hooks";
 import { demos } from "./AILab";
+import { hasPosts } from "./Writing";
 import { GithubIcon, LinkedinIcon } from "./ui";
 
 /** Open an external link through a real anchor (window.open is blocked in some embedded viewers). */
@@ -55,7 +56,7 @@ export default function CommandPalette({
           window.location.hash = `lab/${d.id}`;
         },
       })),
-      ...[...navLinks, ...extraSections].map((l) => ({ id: `nav-${l.id}`, group: "Navigate", label: l.label, icon: <Hash className="size-4" />, run: go(l.id) })),
+      ...[...navLinks, ...extraSections, ...(hasPosts ? [{ id: "writing", label: "Writing" }] : [])].map((l) => ({ id: `nav-${l.id}`, group: "Navigate", label: l.label, icon: <Hash className="size-4" />, run: go(l.id) })),
       ...projects.map((p) => ({
         id: `proj-${p.id}`,
         group: "Projects",

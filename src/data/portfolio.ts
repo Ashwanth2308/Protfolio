@@ -195,6 +195,12 @@ export type Project = {
   stack: string[];
   metric?: { value: string; label: string };
   links?: { label: string; href: string }[];
+  /** Key design decisions: what was chosen and why it matters. */
+  decisions?: { title: string; body: string }[];
+  /** Outcomes. Add real numbers here as you have them. */
+  results?: string[];
+  /** "What I'd do differently". Your own reflections; hidden when empty. */
+  lessons?: string[];
 };
 
 export const projects: Project[] = [
@@ -219,6 +225,15 @@ export const projects: Project[] = [
       { label: "Authority ranking", detail: "Regulatory hierarchy" },
       { label: "Gemini + guardrails", detail: "Compliance-checked generation" },
       { label: "Cited output", detail: "Rule-linked filing sections" },
+    ],
+    decisions: [
+      { title: "Regulatory authority hierarchy", body: "Retrieved sources are ranked by regulatory authority, so the output follows the governing state rule and cites it." },
+      { title: "Field-by-field analysis", body: "Actuarial filings are analyzed one field at a time (LDF, DCCE, MPEP, credibility complements) so each value is checked against its own requirements." },
+      { title: "Compliance guardrails on every output", body: "Generated sections pass compliance guardrails before they are used, so outputs stay within state rules." },
+    ],
+    results: [
+      "Automates California Department of Insurance Prior Approval rate filings for Property & Casualty lines under Proposition 103.",
+      "Every generated output cites the regulation that governs it.",
     ],
     stack: ["Python", "Google Gemini API", "MongoDB", "RAG", "Guardrails", "Structured Outputs"],
     metric: { value: "Prop 103", label: "Regulated P&C workflow" },
@@ -246,6 +261,16 @@ export const projects: Project[] = [
       { label: "Output scanners", detail: "PII leakage · unsafe actions" },
       { label: "Red-team loop", detail: "LangGraph attacker · OWASP LLM" },
     ],
+    decisions: [
+      { title: "OpenAI-compatible API", body: "The gateway exposes an OpenAI-compatible API, so existing clients can sit behind it by changing their base URL." },
+      { title: "Inspect inputs, outputs and tool calls", body: "Detection covers prompt injection, jailbreaks, PII leakage and unsafe tool calls, in real time." },
+      { title: "Red-team against the same taxonomy", body: "A LangGraph agent generates direct and indirect injection attacks mapped to the OWASP Top 10 for LLM Applications, so the gateway is tested against the categories it defends." },
+      { title: "Measure with and without the gateway", body: "Attack success rate, false-positive rate and latency overhead are benchmarked in both configurations." },
+    ],
+    results: [
+      "Shipped as a Dockerized FastAPI service.",
+      "Benchmarked on attack success rate, false-positive rate and latency overhead, with vs. without the gateway.",
+    ],
     stack: ["Python", "FastAPI", "LangGraph", "Docker", "OWASP LLM Top 10", "OpenAI API"],
     metric: { value: "OWASP", label: "LLM Top 10 coverage" },
   },
@@ -271,6 +296,13 @@ export const projects: Project[] = [
       { label: "Benchmark", detail: "vs frontier API: acc · cost · latency" },
       { label: "Serve", detail: "vLLM behind FastAPI" },
     ],
+    decisions: [
+      { title: "QLoRA on a 7B open model", body: "Fine-tuning with 4-bit quantized weights and LoRA adapters (Transformers + PEFT) keeps GPU memory needs low." },
+      { title: "Evaluate by running the rules", body: "Generated Sigma rules are executed against held-out attack and benign logs, measuring detection rate and false positives rather than text similarity." },
+      { title: "Compare against a frontier API", body: "The fine-tuned model is compared with a frontier API model on accuracy, cost and latency." },
+      { title: "Serve with vLLM", body: "The model is served with vLLM behind FastAPI." },
+    ],
+    results: ["Execution-based evaluation harness measuring detection rate and false positives on held-out logs."],
     stack: ["PyTorch", "Hugging Face Transformers", "PEFT", "QLoRA", "vLLM", "FastAPI", "Sigma"],
     metric: { value: "7B", label: "QLoRA fine-tuned model" },
     links: [{ label: "GitHub", href: "https://github.com/AlivelliAshwanth" }],
@@ -296,6 +328,10 @@ export const projects: Project[] = [
       { label: "Recommendations", detail: "Guided response steps" },
       { label: "Structured report", detail: "Analyst-ready output" },
     ],
+    decisions: [
+      { title: "Structured outputs", body: "LLM pipelines return structured outputs, which keeps incident reports consistent and analyst-ready." },
+      { title: "Correlate before recommending", body: "Related security events are correlated before the system generates guided response recommendations." },
+    ],
     stack: ["Python", "FastAPI", "LLM Pipelines", "Structured Outputs", "Pydantic"],
   },
   {
@@ -318,6 +354,11 @@ export const projects: Project[] = [
       { label: "Candidate retrieval", detail: "Pinecone ANN search" },
       { label: "Re-ranking", detail: "Location · activity · similarity" },
       { label: "Feedback loop", detail: "Likes · skips · messages" },
+    ],
+    decisions: [
+      { title: "Two-stage matching", body: "Fast candidate retrieval with Pinecone vector search, then re-ranking on location, recent activity and similarity scores." },
+      { title: "Profiles as vectors", body: "Each user's profile, interests and stated preferences are embedded so compatibility can be scored by similarity." },
+      { title: "Behavioral feedback loop", body: "Likes, skips and messages feed back into the model to refine recommendations over time." },
     ],
     stack: ["Python", "Pinecone", "Embeddings", "Recommendation Systems", "Re-ranking"],
     metric: { value: "2-stage", label: "Retrieve → re-rank" },
@@ -342,6 +383,10 @@ export const projects: Project[] = [
       { label: "Control validation", detail: "Detect / prevent?" },
       { label: "LLM report", detail: "Readable findings" },
     ],
+    decisions: [
+      { title: "Map everything to MITRE ATT&CK", body: "Simulated techniques are mapped to MITRE ATT&CK, so results line up with how security teams already describe coverage." },
+      { title: "LLMs for scenarios and reports", body: "LLMs generate attack scenarios and turn simulation results into readable reports." },
+    ],
     stack: ["Python", "LLMs", "MITRE ATT&CK", "Adversary Emulation"],
   },
   {
@@ -364,6 +409,11 @@ export const projects: Project[] = [
       { label: "Retrieve", detail: "Semantic search" },
       { label: "Grounded answer", detail: "With source citations" },
     ],
+    decisions: [
+      { title: "Source-cited answers", body: "Every response cites the internal documents it came from." },
+      { title: "Tune retrieval and prompts for grounding", body: "Parsing, chunking, embeddings and vector search were tuned together with the prompts to keep answers grounded." },
+    ],
+    results: ["Replaced manual document search for employees."],
     stack: ["Python", "LangChain", "Embeddings", "Vector Search", "Prompt Engineering"],
   },
   {
@@ -426,6 +476,11 @@ export const projects: Project[] = [
       { label: "XGBoost", detail: "Anomaly + failure forecast" },
       { label: "Real-time alerts", detail: "95% accuracy" },
     ],
+    decisions: [
+      { title: "Sliding-window health indicators", body: "Rolling averages, vibration peaks and temperature trends are computed over sliding time windows from live sensor streams." },
+      { title: "Track precision, recall and F1", body: "Beyond accuracy, precision, recall and F1 were tracked to limit missed failures." },
+    ],
+    results: ["95% accuracy predicting abnormal behavior and failures in real time.", "Trained on real sensor data collected from the college's CNC machines during live machining."],
     stack: ["Python", "XGBoost", "pandas", "NumPy", "scikit-learn", "Time Series"],
     metric: { value: "95%", label: "Prediction accuracy" },
   },

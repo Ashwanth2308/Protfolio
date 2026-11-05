@@ -2,6 +2,7 @@ import { AnimatePresence, motion, useScroll, useSpring } from "motion/react";
 import { Command, Download, Menu, Moon, Sun, Timer, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { navLinks, profile } from "../data/portfolio";
+import { track } from "../lib/analytics";
 import { useActiveSection, type Theme } from "../hooks/hooks";
 import { useUI } from "./ui";
 
@@ -109,6 +110,7 @@ export default function Navbar({ theme, onToggleTheme }: { theme: Theme; onToggl
             </button>
             <a
               href={`./${profile.resume}`}
+              onClick={() => track("resume_download")}
               download
               className="hidden items-center gap-1.5 rounded-lg bg-fg px-3.5 py-2 text-sm font-medium text-bg transition-transform hover:-translate-y-0.5 sm:flex"
             >
@@ -165,6 +167,7 @@ export default function Navbar({ theme, onToggleTheme }: { theme: Theme; onToggl
                   </button>
                   <a
                     href={`./${profile.resume}`}
+              onClick={() => track("resume_download")}
                     download
                     className="flex items-center justify-center gap-2 rounded-lg bg-fg px-3 py-3 text-sm font-medium text-bg"
                   >

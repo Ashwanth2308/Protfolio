@@ -25,6 +25,14 @@ export function useTheme() {
 /** Returns the id of the section currently in view. */
 export function useActiveSection(ids: string[]) {
   const [active, setActive] = useState<string>("");
+  const [version, setVersion] = useState(0);
+
+  // Re-observe when progressively mounted sections replace their placeholders.
+  useEffect(() => {
+    const bump = () => setVersion((v) => v + 1);
+    window.addEventListener("section-mounted", bump);
+    return () => window.removeEventListener("section-mounted", bump);
+  }, []);
 
   useEffect(() => {
     const els = ids.map((id) => document.getElementById(id)).filter(Boolean) as HTMLElement[];
@@ -38,7 +46,7 @@ export function useActiveSection(ids: string[]) {
     );
     els.forEach((el) => obs.observe(el));
     return () => obs.disconnect();
-  }, [ids]);
+  }, [ids, version]);
 
   return active;
 }

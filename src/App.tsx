@@ -14,8 +14,10 @@ import ProjectModal from "./components/ProjectModal";
 import Projects from "./components/Projects";
 import RecruiterView from "./components/RecruiterView";
 import Skills from "./components/Skills";
-import { UIContext } from "./components/ui";
+import Writing, { hasPosts } from "./components/Writing";
+import { Deferred, UIContext } from "./components/ui";
 import { useTheme } from "./hooks/hooks";
+import { track } from "./lib/analytics";
 
 /** Soft glow that follows the pointer (desktop pointers only). */
 function CursorGlow() {
@@ -66,6 +68,7 @@ export default function App() {
   const openPalette = useCallback(() => setPaletteOpen(true), []);
   const openRecruiter = useCallback(() => {
     setPaletteOpen(false);
+    track("recruiter_view_open");
     setRecruiterOpen(true);
   }, []);
   const closeRecruiter = useCallback(() => setRecruiterOpen(false), []);
@@ -88,6 +91,16 @@ export default function App() {
     return () => window.removeEventListener("keydown", onKey);
   }, [openChat]);
 
+  // Once lazily mounted sections are in place, honour a #section in the URL again.
+  useEffect(() => {
+    const onReady = () => {
+      const h = window.location.hash.slice(1);
+      if (h && !h.includes("/") && h !== "recruiter") document.getElementById(h)?.scrollIntoView();
+    };
+    window.addEventListener("sections-ready", onReady, { once: true });
+    return () => window.removeEventListener("sections-ready", onReady);
+  }, []);
+
   // Deep link: ?recruiter or #recruiter opens the quick view (handy to share with hiring teams)
   useEffect(() => {
     if (/[?&]recruiter\b/.test(window.location.search) || window.location.hash === "#recruiter") setRecruiterOpen(true);
@@ -109,27 +122,49 @@ export default function App() {
         <main>
           <Hero />
           <About />
-          <Experience onOpenProject={setProjectId} />
-          <Projects onOpen={setProjectId} />
-          <AILab />
-          <Skills />
-          <Education />
-          <FitCheck />
-          <Contact />
+          <Deferred id="experience" minHeight={1500}>
+            <Experience onOpenProject={setProjectId} />
+          </Deferred>
+          <Deferred id="projects" minHeight={2200}>
+            <Projects onOpen={setProjectId} />
+          </Deferred>
+          <Deferred id="lab" minHeight={1400}>
+            <AILab />
+          </Deferred>
+          <Deferred id="skills" minHeight={1200}>
+            <Skills />
+          </Deferred>
+          <Deferred id="education" minHeight={700}>
+            <Education />
+          </Deferred>
+          <Deferred id="fit" minHeight={900}>
+            <FitCheck />
+          </Deferred>
+          {hasPosts && (
+            <Deferred id="writing" minHeight={500}>
+              <Writing index="08" />
+            </Deferred>
+          )}
+          <Deferred id="contact" minHeight={900}>
+            <Contact index={hasPosts ? "09" : "08"} />
+            <Footer />
+          </Deferred>
         </main>
-        <Footer />
 
-        <ProjectModal id={projectId} onClose={closeProject} onNavigate={setProjectId} />
-        <RecruiterView open={recruiterOpen} onClose={closeRecruiter} />
-        <CommandPalette
-          open={paletteOpen}
-          onClose={() => setPaletteOpen(false)}
-          onToggleTheme={toggle}
-          onAsk={openChat}
-          onOpenProject={setProjectId}
-          onOpenRecruiter={openRecruiter}
-        />
-        <AskAI open={chatOpen} onOpenChange={setChatOpen} pending={pending} onPendingHandled={clearPending} />
+        {/* Overlays are invisible until used, so they mount after the page settles. */}
+        <Deferred>
+          <ProjectModal id={projectId} onClose={closeProject} onNavigate={setProjectId} />
+          <RecruiterView open={recruiterOpen} onClose={closeRecruiter} />
+          <CommandPalette
+            open={paletteOpen}
+            onClose={() => setPaletteOpen(false)}
+            onToggleTheme={toggle}
+            onAsk={openChat}
+            onOpenProject={setProjectId}
+            onOpenRecruiter={openRecruiter}
+          />
+          <AskAI open={chatOpen} onOpenChange={setChatOpen} pending={pending} onPendingHandled={clearPending} />
+        </Deferred>
       </UIContext.Provider>
     </MotionConfig>
   );

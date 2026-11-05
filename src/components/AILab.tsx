@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { Activity, Bot, FlaskConical, HeartHandshake, Scissors, SearchCheck, ShieldHalf, SlidersHorizontal, Target, Workflow, type LucideIcon } from "lucide-react";
 import { lazy, Suspense, useEffect, useState, type ComponentType, type LazyExoticComponent } from "react";
 import { Reveal, Section } from "./ui";
+import { track } from "../lib/analytics";
 
 type Demo = {
   id: string;
@@ -45,6 +46,7 @@ export default function AILab() {
 
   const select = (id: string) => {
     setTab(id);
+    track("lab_open", { demo: id });
     try {
       history.replaceState(null, "", `#lab/${id}`);
     } catch {
@@ -94,7 +96,7 @@ export default function AILab() {
                   <span className="block font-display text-sm leading-tight font-semibold text-fg">{d.title}</span>
                   <span className="mt-0.5 block truncate text-xs text-subtle">{d.sub}</span>
                 </span>
-                <span className="absolute top-2 right-2.5 font-mono text-[9px] uppercase tracking-widest text-subtle/80">{d.tag}</span>
+                <span className="absolute top-2 right-2.5 font-mono text-[9.5px] uppercase tracking-widest text-subtle">{d.tag}</span>
               </button>
             );
           })}

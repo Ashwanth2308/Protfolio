@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { ArrowUpRight, BadgeCheck, Check, ClipboardCopy, Download, Mail, ScanSearch, Timer, X } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { profile, projects, recruiter } from "../data/portfolio";
+import { track } from "../lib/analytics";
 import { useCopy, useLockBody } from "../hooks/hooks";
 import { GithubIcon, icons, LinkedinIcon, useUI } from "./ui";
 
@@ -167,6 +168,7 @@ export default function RecruiterView({ open, onClose }: { open: boolean; onClos
               <div className="grid grid-cols-2 gap-2">
                 <a
                   href={`./${profile.resume}`}
+              onClick={() => track("resume_download")}
                   download
                   className="flex items-center justify-center gap-2 rounded-xl bg-fg px-4 py-3 text-sm font-medium text-bg"
                 >

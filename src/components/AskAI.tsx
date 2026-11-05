@@ -3,6 +3,8 @@ import { ArrowUp, ChevronDown, CornerDownRight, Mic, RotateCcw, Sparkles, X } fr
 import { useCallback, useEffect, useRef, useState } from "react";
 import { profile } from "../data/portfolio";
 import { ask, starterQuestions, type AssistantReply } from "../lib/assistant";
+import { askRemote, remoteEnabled } from "../lib/remoteChat";
+import { track } from "../lib/analytics";
 import { RichText } from "./ui";
 
 type Msg = { id: number; role: "user" | "assistant"; text: string; reply?: AssistantReply; done: boolean };
@@ -10,7 +12,9 @@ type Msg = { id: number; role: "user" | "assistant"; text: string; reply?: Assis
 const welcome = (): Msg => ({
   id: 0,
   role: "assistant",
-  text: `Hi! I'm ${profile.firstName}'s AI assistant, a small RAG system running right in your browser. Ask me anything about his experience, projects or skills.`,
+  text: remoteEnabled
+    ? `Hi! I'm ${profile.firstName}'s AI assistant, powered by Claude and grounded only in his portfolio. Ask me anything about his experience, projects or skills.`
+    : `Hi! I'm ${profile.firstName}'s AI assistant, a small RAG system running right in your browser. Ask me anything about his experience, projects or skills.`,
   done: true,
 });
 
@@ -47,35 +51,38 @@ export default function AskAI({
       const uid = nextId.current++;
       const aid = nextId.current++;
       setMsgs((m) => [...m, { id: uid, role: "user", text: question, done: true }]);
+      track("chat_question");
       scrollDown();
 
-      // "thinking" → retrieve → stream answer
-      const t1 = window.setTimeout(
-        () => {
-          const reply = ask(question);
-          setMsgs((m) => [...m, { id: aid, role: "assistant", text: "", reply, done: false }]);
-          const words = reply.answer.split(/(\s+)/);
-          if (reduce) {
-            setMsgs((m) => m.map((x) => (x.id === aid ? { ...x, text: reply.answer, done: true } : x)));
-            setBusy(false);
-            scrollDown();
-            return;
-          }
-          let i = 0;
-          const tick = () => {
-            i = Math.min(words.length, i + 3);
-            const text = words.slice(0, i).join("");
-            const done = i >= words.length;
-            setMsgs((m) => m.map((x) => (x.id === aid ? { ...x, text, done } : x)));
-            scrollDown();
-            if (!done) timers.current.push(window.setTimeout(tick, 28));
-            else setBusy(false);
-          };
-          tick();
-        },
-        reduce ? 0 : 420,
-      );
-      timers.current.push(t1);
+      const deliver = (reply: AssistantReply) => {
+        setMsgs((m) => [...m, { id: aid, role: "assistant", text: "", reply, done: false }]);
+        const words = reply.answer.split(/(\s+)/);
+        if (reduce) {
+          setMsgs((m) => m.map((x) => (x.id === aid ? { ...x, text: reply.answer, done: true } : x)));
+          setBusy(false);
+          scrollDown();
+          return;
+        }
+        let i = 0;
+        const tick = () => {
+          i = Math.min(words.length, i + 3);
+          const text = words.slice(0, i).join("");
+          const done = i >= words.length;
+          setMsgs((m) => m.map((x) => (x.id === aid ? { ...x, text, done } : x)));
+          scrollDown();
+          if (!done) timers.current.push(window.setTimeout(tick, 28));
+          else setBusy(false);
+        };
+        tick();
+      };
+
+      if (remoteEnabled) {
+        // Claude via the chat worker; any failure falls back to the in-browser engine.
+        void askRemote(question).then((r) => deliver(r ?? ask(question)));
+      } else {
+        // "thinking" → retrieve → stream answer
+        timers.current.push(window.setTimeout(() => deliver(ask(question)), reduce ? 0 : 420));
+      }
     },
     [busy, reduce, scrollDown],
   );
@@ -158,7 +165,7 @@ export default function AskAI({
               </span>
               <div className="min-w-0 flex-1">
                 <div className="font-display text-[15px] font-semibold text-fg">Ask {profile.firstName}'s AI</div>
-                <div className="truncate font-mono text-[10.5px] text-subtle">in-browser RAG · no API calls</div>
+                <div className="truncate font-mono text-[10.5px] text-subtle">{remoteEnabled ? "Claude · grounded · guardrailed" : "in-browser RAG · no API calls"}</div>
               </div>
               <button
                 onClick={reset}

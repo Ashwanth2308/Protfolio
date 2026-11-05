@@ -17,7 +17,7 @@ import {
   Workflow,
   type LucideIcon,
 } from "lucide-react";
-import { createContext, useCallback, useContext, type ReactNode, type MouseEvent, type SVGProps } from "react";
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode, type MouseEvent, type SVGProps } from "react";
 
 /* ───────── Global UI context (open assistant / command palette) ───────── */
 type UIContextValue = {
@@ -164,4 +164,47 @@ export function RichText({ text }: { text: string }) {
       )}
     </>
   );
+}
+
+/* ───────── Progressive mounting ─────────
+   Sections below the fold mount one per idle slot after the first paint, so the
+   initial render is small and the main thread stays responsive on phones. */
+const mountQueue: (() => void)[] = [];
+let pumping = false;
+const onIdle = (cb: () => void) => {
+  const w = window as Window & { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number };
+  if (w.requestIdleCallback) w.requestIdleCallback(cb, { timeout: 500 });
+  else window.setTimeout(cb, 16);
+};
+function pump() {
+  if (pumping) return;
+  pumping = true;
+  const next = () => {
+    const job = mountQueue.shift();
+    if (!job) {
+      pumping = false;
+      window.dispatchEvent(new Event("sections-ready"));
+      return;
+    }
+    job();
+    onIdle(next);
+  };
+  onIdle(next);
+}
+
+export function Deferred({ id, minHeight = 720, children }: { id?: string; minHeight?: number; children: ReactNode }) {
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    let alive = true;
+    mountQueue.push(() => alive && setReady(true));
+    pump();
+    return () => {
+      alive = false;
+    };
+  }, []);
+  useEffect(() => {
+    if (ready) window.dispatchEvent(new Event("section-mounted"));
+  }, [ready]);
+  if (ready) return <>{children}</>;
+  return id ? <div id={id} style={{ minHeight }} aria-hidden="true" /> : null;
 }

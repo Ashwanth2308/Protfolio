@@ -2,6 +2,7 @@ import { motion, useReducedMotion } from "motion/react";
 import { ArrowRight, BookOpenCheck, Download, Gauge, Mail, MapPin, ShieldCheck, Sparkles, Timer } from "lucide-react";
 import { useEffect, useState } from "react";
 import { profile } from "../data/portfolio";
+import { track } from "../lib/analytics";
 import AgentTrace from "./AgentTrace";
 import NeuralBackground from "./NeuralBackground";
 import { LogoChip } from "./Logo";
@@ -50,7 +51,7 @@ export default function Hero() {
   const fade = (d: number) =>
     reduce
       ? {}
-      : { initial: { opacity: 0, y: 18 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.7, delay: d, ease } };
+      : { initial: { y: 14 }, animate: { y: 0 }, transition: { duration: 0.7, delay: d, ease } }; // visible from the first paint (fast LCP)
 
   return (
     <section id="top" className="relative isolate flex min-h-[100svh] items-center overflow-hidden pt-24 pb-16">
@@ -136,6 +137,7 @@ export default function Hero() {
             <span className="h-px w-8 bg-line-strong" />
             <a
               href={`./${profile.resume}`}
+              onClick={() => track("resume_download")}
               download
               className="inline-flex items-center gap-1.5 font-mono text-xs text-muted transition-colors hover:text-fg"
             >
@@ -154,8 +156,8 @@ export default function Hero() {
         </div>
 
         <motion.div
-          initial={reduce ? false : { opacity: 0, y: 30, scale: 0.98 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
+          initial={reduce ? false : { y: 24, scale: 0.985 }}
+          animate={{ y: 0, scale: 1 }}
           transition={{ duration: 0.9, delay: 0.35, ease }}
           className="relative"
         >
