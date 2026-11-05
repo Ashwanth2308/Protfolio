@@ -24,6 +24,8 @@ export const profile = {
   // It is still available inside the downloadable resume.
   phone: "+91 9652754052",
   resume: "Alivelli_Ashwanth_Resume.pdf",
+  /** Contact form backend (Formspree). Messages are emailed to the form owner. */
+  formEndpoint: "https://formspree.io/f/mpppbkbg",
   socials: {
     github: "https://github.com/AlivelliAshwanth",
     linkedin: "https://www.linkedin.com/in/ashwanth-reddy-alivelli-69133a225",

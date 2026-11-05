@@ -33,8 +33,6 @@ jobs:
           VITE_ANALYTICS_ID: ${{ vars.ANALYTICS_ID }}
           VITE_ANALYTICS_SRC: ${{ vars.ANALYTICS_SRC }}
           VITE_FORM_ENDPOINT: ${{ vars.FORM_ENDPOINT }}
-          VITE_FORM_ACCESS_KEY: ${{ vars.FORM_ACCESS_KEY }}
-          VITE_CHAT_API_URL: ${{ vars.CHAT_API_URL }}
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

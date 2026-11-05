@@ -1,4 +1,4 @@
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { AnimatePresence, motion, useInView, useReducedMotion } from "motion/react";
 import { Ban, Bot, Brain, Check, FileSearch, Mail, Play, ScanSearch, ShieldCheck, Sparkles, Wrench } from "lucide-react";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { agentPresets, runAgent, TOOL_NODES, type NodeId, type Step } from "../../lib/agent";
@@ -101,9 +101,13 @@ export default function AgentLab() {
   const run = useMemo(() => runAgent(runId.q), [runId]);
   const [shown, setShown] = useState(0);
   const timers = useRef<number[]>([]);
+  const root = useRef<HTMLDivElement>(null);
+  // Only play the run once the workbench is on screen, so off-screen growth never shifts the page.
+  const inView = useInView(root, { once: true, margin: "0px 0px -15% 0px" });
 
   useEffect(() => {
     timers.current.forEach(clearTimeout);
+    if (!inView) return;
     if (reduce) {
       setShown(run.steps.length + 1);
       return;
@@ -111,7 +115,7 @@ export default function AgentLab() {
     setShown(0);
     timers.current = Array.from({ length: run.steps.length + 1 }, (_, i) => window.setTimeout(() => setShown(i + 1), 450 + i * 650));
     return () => timers.current.forEach(clearTimeout);
-  }, [run, reduce]);
+  }, [run, reduce, inView]);
 
   const go = (q: string) => {
     if (!q.trim()) return;
@@ -137,7 +141,7 @@ export default function AgentLab() {
   }
 
   return (
-    <div className="p-5 md:p-6">
+    <div ref={root} className="p-5 md:p-6">
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -248,7 +252,8 @@ export default function AgentLab() {
         {/* trace */}
         <div>
           <PanelTitle meta={`${revealed.length}/${run.steps.length} steps`}>Execution trace</PanelTitle>
-          <ol className="space-y-2">
+          {/* reserve the final height so the list growing step by step never shifts the page */}
+          <ol className="space-y-2" style={{ minHeight: run.steps.length * 84 }}>
             <AnimatePresence initial={false}>
               {revealed.map((s, i) => (
                 <TraceStep key={`${runId.n}-${i}`} s={s} />

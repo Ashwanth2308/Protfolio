@@ -91,14 +91,16 @@ export default function App() {
     return () => window.removeEventListener("keydown", onKey);
   }, [openChat]);
 
-  // Once lazily mounted sections are in place, honour a #section in the URL again.
+  // Honour a #section in the URL: jump to its placeholder right away, then again once
+  // the progressively mounted sections are in place (instant, so it lands immediately).
   useEffect(() => {
-    const onReady = () => {
+    const jump = () => {
       const h = window.location.hash.slice(1);
-      if (h && !h.includes("/") && h !== "recruiter") document.getElementById(h)?.scrollIntoView();
+      if (h && !h.includes("/") && h !== "recruiter") document.getElementById(h)?.scrollIntoView({ behavior: "instant" as ScrollBehavior });
     };
-    window.addEventListener("sections-ready", onReady, { once: true });
-    return () => window.removeEventListener("sections-ready", onReady);
+    jump();
+    window.addEventListener("sections-ready", jump, { once: true });
+    return () => window.removeEventListener("sections-ready", jump);
   }, []);
 
   // Deep link: ?recruiter or #recruiter opens the quick view (handy to share with hiring teams)

@@ -6,7 +6,7 @@ tags: [RAG, BM25, LLM security, Evals]
 draft: false
 ---
 
-By default, every AI feature on this portfolio runs in the visitor's browser. There is no model API behind the chat, no server receiving what you type, and no key to leak. I built it that way on purpose: a portfolio should be cheap to host, private for visitors, and impossible to run up a bill on.
+Every AI feature on this portfolio runs in the visitor's browser. There is no model API behind the chat, no server receiving what you type, and no key to leak. I built it that way on purpose: a portfolio should be cheap to host, private for visitors, and impossible to run up a bill on.
 
 ## The assistant is a small RAG system
 
@@ -32,7 +32,7 @@ The hallucination checker applies a rule I use for compliance work: every claim 
 
 ## Where an LLM still wins
 
-Keyword retrieval cannot handle questions phrased in words the knowledge base never uses, and templated answers cannot combine facts the way a model can. For that, the site can optionally call Claude through a small server function. It keeps the same guardrail in front, retrieves context first, tells the model to answer only from that context, and caps tokens and requests per day. If the function is not configured, or fails, the assistant falls back to the local version.
+Keyword retrieval cannot handle questions phrased in words the knowledge base never uses, and templated answers cannot combine facts the way a model can. That is the trade I made on purpose for a portfolio: nothing to pay for, nothing to leak, and every answer traceable to its source. In production work the same pipeline puts an LLM after the confidence gate, with the guardrail in front and retrieval feeding it the context.
 
 ## Try it
 

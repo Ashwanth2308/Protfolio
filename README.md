@@ -64,37 +64,15 @@ Import the repo. Build command: `npm run build`. Output directory: `dist`.
 Add a `public/CNAME` file containing your domain (for GitHub Pages), or set the domain in Vercel/Netlify.
 Then change the `og:image` / `twitter:image` URLs in `index.html` to absolute URLs (e.g. `https://your-domain.com/og-image.png`), because some social networks require absolute image URLs.
 
-## Optional features (all off by default)
+## Optional features
 
-Everything below is switched on by a setting. Locally, put the values in `.env.local` (see `.env.example`). For GitHub Pages, add them as **repository variables** (Settings → Secrets and variables → Actions → Variables), named without the `VITE_` prefix. Anything you leave unset stays off, and the site keeps working.
+The contact form works out of the box. The rest is switched on by a setting. Locally, put the values in `.env.local` (see `.env.example`). For GitHub Pages, add them as **repository variables** (Settings → Secrets and variables → Actions → Variables), named without the `VITE_` prefix. Anything you leave unset stays off, and the site keeps working.
 
 | Feature | Variable(s) | What you need |
 | --- | --- | --- |
 | Custom domain, absolute social-preview URLs, canonical link, `sitemap.xml`, `rss.xml`, `CNAME` | `SITE_URL` (e.g. `https://ashwanth.dev`) | A domain. For GitHub Pages, point DNS at GitHub (a `CNAME` record to `ashwanth2308.github.io`, or GitHub's A records for an apex domain), then add the domain under Settings → Pages. |
 | Privacy-friendly analytics | `ANALYTICS` (`plausible`, `umami` or `goatcounter`) + `ANALYTICS_ID` | An account with that service. Events tracked: `recruiter_view_open`, `fit_check`, `lab_open`, `resume_download`, `chat_question`, `contact_submit`. |
-| Contact form that sends | `FORM_ENDPOINT` (+ `FORM_ACCESS_KEY` for Web3Forms) | A free Formspree form (use its `https://formspree.io/f/…` endpoint). Includes a spam honeypot, and success and error states. |
-| Claude-powered chat | `CHAT_API_URL` | Deploy `server/chat-worker` (below). The offline assistant stays as the fallback. |
-
-### Claude-powered chat (optional)
-
-`server/chat-worker` is a Cloudflare Worker that answers chat questions with Claude:
-
-- It runs the same guardrail as the site first, so blocked prompts never reach the model.
-- It sends your portfolio knowledge base as a cached system prompt, and Claude is told to answer only from it.
-- It limits each visitor to 6 requests a minute, caps the day at 300, and caps each answer's length.
-- It uses server-side refusal fallback: if the model declines, the API retries on another model automatically.
-- On any error it tells the site to use the in-browser assistant instead.
-
-```bash
-cd server/chat-worker
-npm install
-npx wrangler login
-npx wrangler secret put ANTHROPIC_API_KEY      # your key, stored by Cloudflare, never in the repo
-# edit wrangler.toml → ALLOWED_ORIGINS = "https://your-domain,http://localhost:5173"
-npx wrangler deploy                             # prints the worker URL → set it as CHAT_API_URL
-```
-
-The default model is `claude-opus-5-5` at low effort. For lower cost, set `MODEL = "claude-haiku-5-5"` in `wrangler.toml`. Rough cost per question with Opus 5.5: the cached knowledge base (~7k tokens) costs about $0.0014 to read, plus output tokens at $20/M (about $0.01 for a 500-token answer, thinking included). Writing the cache costs about $0.035, after any five-minute gap between questions. The daily cap bounds the total.
+| Contact form | Already on: it posts to Formspree (`profile.formEndpoint` in `src/data/portfolio.ts`). `FORM_ENDPOINT` overrides it. | Nothing. Formspree emails each message to the form's owner. Includes a spam honeypot, and success and error states. |
 
 ### Writing (blog)
 
@@ -138,7 +116,6 @@ src/
   lib/guardrail.ts         ← mini LLM gateway: detectors, OWASP mapping, redaction
   lib/agent.ts             ← graph agent: planner + tools built on the engines above
   lib/chunk.ts             ← chunking strategies + BM25 over chunks
-  lib/remoteChat.ts        ← optional Claude worker client (falls back to the local engine)
   lib/analytics.ts         ← opt-in analytics events
   lib/grounding.ts         ← claim-level grounding / hallucination check
   components/
@@ -162,7 +139,6 @@ src/
     Writing.tsx            ← blog posts on the home page
 content/blog/              ← Markdown posts (static pages generated at build)
 plugins/site.ts            ← build plugin: SEO URLs, sitemap, RSS, CNAME, analytics, blog pages
-server/chat-worker/        ← optional Cloudflare Worker for Claude-powered chat
 public/                    ← resume PDF, favicon, OG image
 ```
 

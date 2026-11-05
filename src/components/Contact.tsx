@@ -6,8 +6,7 @@ import { track } from "../lib/analytics";
 import { hasPosts } from "./Writing";
 import { GithubIcon, LinkedinIcon, Reveal, Section, useUI } from "./ui";
 
-const FORM_ENDPOINT = import.meta.env.VITE_FORM_ENDPOINT;
-const FORM_KEY = import.meta.env.VITE_FORM_ACCESS_KEY;
+const FORM_ENDPOINT = import.meta.env.VITE_FORM_ENDPOINT || profile.formEndpoint;
 
 type Status = "idle" | "sending" | "sent" | "error";
 
@@ -16,6 +15,7 @@ export default function Contact({ index = "08" }: { index?: string }) {
   const { openChat } = useUI();
   const [form, setForm] = useState({ name: "", email: "", message: "", company: "" });
   const [status, setStatus] = useState<Status>("idle");
+  const [errorText, setErrorText] = useState("");
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
@@ -32,7 +32,9 @@ export default function Contact({ index = "08" }: { index?: string }) {
       return;
     }
     setStatus("sending");
+    setErrorText("");
     try {
+      // Formspree: JSON in, JSON out. `email` becomes the reply-to address.
       const res = await fetch(FORM_ENDPOINT, {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
@@ -41,11 +43,18 @@ export default function Contact({ index = "08" }: { index?: string }) {
           email: form.email,
           message: form.message,
           _subject: `Portfolio enquiry from ${form.name}`,
-          subject: `Portfolio enquiry from ${form.name}`,
-          ...(FORM_KEY ? { access_key: FORM_KEY } : {}),
         }),
       });
-      setStatus(res.ok ? "sent" : "error");
+      if (res.ok) {
+        setStatus("sent");
+        return;
+      }
+      const data = (await res.json().catch(() => null)) as { errors?: { field?: string; message?: string }[] } | null;
+      const msgs = (data?.errors ?? [])
+        .filter((e) => e.message)
+        .map((e) => (e.field ? `${e.field[0].toUpperCase()}${e.field.slice(1)} ${e.message}.` : `${e.message}.`));
+      setErrorText(msgs.join(" "));
+      setStatus("error");
     } catch {
       setStatus("error");
     }
@@ -187,7 +196,7 @@ export default function Contact({ index = "08" }: { index?: string }) {
                 </label>
                 {status === "error" && (
                   <p className="mt-3 rounded-xl border border-danger/40 bg-danger/10 px-3 py-2 text-sm text-fg" role="alert">
-                    The message didn't go through. Please try again, or email me at {profile.email}.
+                    {errorText ? `${errorText} ` : "The message didn't go through. "}Please try again, or email me at {profile.email}.
                   </p>
                 )}
                 <button
@@ -198,7 +207,7 @@ export default function Contact({ index = "08" }: { index?: string }) {
                   {status === "sending" ? "Sending…" : "Send message"} <Send className="size-4 transition-transform group-hover:translate-x-0.5" />
                 </button>
                 <p className="mt-3 text-center text-xs text-subtle">
-                  {FORM_ENDPOINT ? "Goes straight to my inbox. I usually reply within a day." : "Opens your email app with the message pre-filled."}
+                  {FORM_ENDPOINT ? "Goes straight to my inbox." : "Opens your email app with the message pre-filled."}
                 </p>
               </>
             )}
@@ -245,7 +254,7 @@ function Field({
 export function Footer() {
   return (
     <footer className="border-t border-line">
-      <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-5 py-8 text-sm text-subtle sm:flex-row sm:px-8">
+      <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-5 pt-8 pb-28 text-sm text-subtle sm:flex-row sm:px-8">
         <p>
           © {new Date().getFullYear()} {profile.name}. Designed & built with React, Tailwind & Motion.
         </p>

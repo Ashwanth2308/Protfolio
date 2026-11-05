@@ -130,9 +130,12 @@ export default function Navbar({ theme, onToggleTheme }: { theme: Theme; onToggl
         <AnimatePresence>
           {open && (
             <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
+              // Fade/slide only: animating height "auto" makes Motion restore the scroll
+              // position on exit, which cancels the jump to the tapped section.
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.18 }}
               className="overflow-hidden border-t border-line bg-elev shadow-2xl shadow-black/40 lg:hidden"
             >
               <ul className="mx-auto flex max-w-6xl flex-col px-5 py-3 sm:px-8">
@@ -145,7 +148,16 @@ export default function Navbar({ theme, onToggleTheme }: { theme: Theme; onToggl
                   >
                     <a
                       href={`#${l.id}`}
-                      onClick={() => setOpen(false)}
+                      onClick={(e) => {
+                        // Close first, then scroll explicitly: closing the menu during the click
+                        // cancels the browser's own anchor scroll on mobile.
+                        e.preventDefault();
+                        setOpen(false);
+                        requestAnimationFrame(() => {
+                          document.getElementById(l.id)?.scrollIntoView({ behavior: "smooth" });
+                          history.pushState(null, "", `#${l.id}`);
+                        });
+                      }}
                       className={`flex items-center justify-between rounded-lg px-3 py-3 text-base ${
                         active === l.id ? "text-fg" : "text-muted"
                       }`}
