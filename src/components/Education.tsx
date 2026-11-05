@@ -4,7 +4,7 @@ import { icons, Reveal, Section } from "./ui";
 
 export default function Education() {
   return (
-    <Section id="education" index="05" eyebrow="Education & recognition" title="Foundations.">
+    <Section id="education" index="06" eyebrow="Education & recognition" title="Foundations.">
       <div className="grid gap-4 lg:grid-cols-[1fr_1.15fr]">
         <Reveal>
           <div className="ring-gradient relative h-full overflow-hidden rounded-2xl border border-line bg-card p-7">

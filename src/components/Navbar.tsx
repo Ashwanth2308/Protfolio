@@ -1,5 +1,5 @@
 import { AnimatePresence, motion, useScroll, useSpring } from "motion/react";
-import { Command, Download, Menu, Moon, Sun, X } from "lucide-react";
+import { Command, Download, Menu, Moon, Sun, Timer, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { navLinks, profile } from "../data/portfolio";
 import { useActiveSection, type Theme } from "../hooks/hooks";
@@ -9,7 +9,7 @@ const ids = navLinks.map((l) => l.id);
 
 export default function Navbar({ theme, onToggleTheme }: { theme: Theme; onToggleTheme: () => void }) {
   const active = useActiveSection(ids);
-  const { openPalette } = useUI();
+  const { openPalette, openRecruiter } = useUI();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const { scrollYProgress } = useScroll();
@@ -48,17 +48,17 @@ export default function Navbar({ theme, onToggleTheme }: { theme: Theme; onToggl
               <span className="absolute inset-0 bg-gradient-to-br from-accent/25 via-transparent to-accent-2/25 opacity-80 transition-opacity group-hover:opacity-100" />
               <span className="relative text-gradient">{profile.initials}</span>
             </span>
-            <span className="hidden font-display text-[15px] font-semibold tracking-tight text-fg sm:block">
+            <span className="hidden font-display text-[15px] font-semibold tracking-tight text-fg sm:block lg:hidden 2xl:block">
               {profile.name}
             </span>
           </a>
 
-          <ul className="ml-auto hidden items-center gap-1 lg:flex">
+          <ul className="ml-auto hidden items-center gap-0.5 lg:flex">
             {navLinks.map((l) => (
               <li key={l.id}>
                 <a
                   href={`#${l.id}`}
-                  className={`relative isolate rounded-lg px-3 py-2 text-sm transition-colors ${
+                  className={`relative isolate rounded-lg px-2.5 py-2 text-sm whitespace-nowrap transition-colors xl:px-3 ${
                     active === l.id ? "text-fg" : "text-muted hover:text-fg"
                   }`}
                 >
@@ -78,11 +78,17 @@ export default function Navbar({ theme, onToggleTheme }: { theme: Theme; onToggl
           <div className="ml-auto flex items-center gap-2 lg:ml-3">
             <button
               onClick={openPalette}
-              className="hidden items-center gap-2 rounded-lg border border-line bg-card px-2.5 py-1.5 text-xs text-muted transition-colors hover:border-line-strong hover:text-fg md:flex"
+              className="hidden items-center gap-1.5 rounded-lg border border-line bg-card px-2 py-1.5 text-xs text-muted transition-colors hover:border-line-strong hover:text-fg md:flex lg:hidden xl:flex"
               aria-label="Open command palette"
             >
               <Command className="size-3.5" />
               <span className="font-mono">{isMac ? "⌘K" : "Ctrl K"}</span>
+            </button>
+            <button
+              onClick={openRecruiter}
+              className="hidden items-center gap-1.5 rounded-lg border border-accent/50 bg-accent/10 px-3 py-2 text-sm font-medium whitespace-nowrap text-accent transition-all hover:-translate-y-0.5 hover:bg-accent/15 sm:flex"
+            >
+              <Timer className="size-3.5" /> For recruiters
             </button>
             <button
               onClick={onToggleTheme}
@@ -147,7 +153,16 @@ export default function Navbar({ theme, onToggleTheme }: { theme: Theme; onToggl
                     </a>
                   </motion.li>
                 ))}
-                <li className="mt-2 border-t border-line pt-3">
+                <li className="mt-2 grid gap-2 border-t border-line pt-3">
+                  <button
+                    onClick={() => {
+                      setOpen(false);
+                      openRecruiter();
+                    }}
+                    className="flex items-center justify-center gap-2 rounded-lg border border-accent/50 bg-accent/10 px-3 py-3 text-sm font-medium text-accent"
+                  >
+                    <Timer className="size-4" /> 30-second recruiter view
+                  </button>
                   <a
                     href={`./${profile.resume}`}
                     download

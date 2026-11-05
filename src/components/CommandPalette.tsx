@@ -1,7 +1,7 @@
 import { AnimatePresence, motion } from "motion/react";
-import { Copy, CornerDownLeft, Download, FileText, Hash, Mail, Moon, Search, Sparkles } from "lucide-react";
+import { Copy, CornerDownLeft, Download, FileText, Hash, Mail, Moon, ScanSearch, Search, ShieldHalf, Sparkles, Timer } from "lucide-react";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { navLinks, profile, projects } from "../data/portfolio";
+import { extraSections, navLinks, profile, projects } from "../data/portfolio";
 import { useLockBody } from "../hooks/hooks";
 import { GithubIcon, LinkedinIcon } from "./ui";
 
@@ -13,12 +13,14 @@ export default function CommandPalette({
   onToggleTheme,
   onAsk,
   onOpenProject,
+  onOpenRecruiter,
 }: {
   open: boolean;
   onClose: () => void;
   onToggleTheme: () => void;
   onAsk: (q?: string) => void;
   onOpenProject: (id: string) => void;
+  onOpenRecruiter: () => void;
 }) {
   const [q, setQ] = useState("");
   const [sel, setSel] = useState(0);
@@ -29,7 +31,10 @@ export default function CommandPalette({
   const items = useMemo<Item[]>(() => {
     const go = (id: string) => () => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
     return [
-      ...navLinks.map((l) => ({ id: `nav-${l.id}`, group: "Navigate", label: l.label, icon: <Hash className="size-4" />, run: go(l.id) })),
+      { id: "recruiter", group: "For recruiters", label: "30-second recruiter view", icon: <Timer className="size-4" />, run: onOpenRecruiter },
+      { id: "fit", group: "For recruiters", label: "Check fit against a job description", icon: <ScanSearch className="size-4" />, run: go("fit") },
+      { id: "lab", group: "For recruiters", label: "Try the guardrail playground", icon: <ShieldHalf className="size-4" />, run: go("lab") },
+      ...[...navLinks, ...extraSections].map((l) => ({ id: `nav-${l.id}`, group: "Navigate", label: l.label, icon: <Hash className="size-4" />, run: go(l.id) })),
       ...projects.map((p) => ({
         id: `proj-${p.id}`,
         group: "Projects",
@@ -64,7 +69,7 @@ export default function CommandPalette({
       { id: "gh", group: "Links", label: "GitHub", icon: <GithubIcon className="size-4" />, run: () => window.open(profile.socials.github, "_blank", "noopener") },
       { id: "li", group: "Links", label: "LinkedIn", icon: <LinkedinIcon className="size-4" />, run: () => window.open(profile.socials.linkedin, "_blank", "noopener") },
     ];
-  }, [onAsk, onOpenProject, onToggleTheme]);
+  }, [onAsk, onOpenProject, onToggleTheme, onOpenRecruiter]);
 
   const filtered = useMemo(() => {
     const s = q.trim().toLowerCase();

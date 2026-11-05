@@ -2,6 +2,9 @@ import { motion, useReducedMotion } from "motion/react";
 import {
   Award,
   Brain,
+  Factory,
+  Heart,
+  Scale,
   Code2,
   Cpu,
   Database,
@@ -20,8 +23,15 @@ import { createContext, useCallback, useContext, type ReactNode, type MouseEvent
 type UIContextValue = {
   openChat: (question?: string) => void;
   openPalette: () => void;
+  openRecruiter: () => void;
+  openProject: (id: string) => void;
 };
-export const UIContext = createContext<UIContextValue>({ openChat: () => {}, openPalette: () => {} });
+export const UIContext = createContext<UIContextValue>({
+  openChat: () => {},
+  openPalette: () => {},
+  openRecruiter: () => {},
+  openProject: () => {},
+});
 export const useUI = () => useContext(UIContext);
 
 /* ───────── Icons ───────── */
@@ -38,6 +48,9 @@ export const icons: Record<string, LucideIcon> = {
   trophy: Trophy,
   medal: Medal,
   award: Award,
+  scale: Scale,
+  heart: Heart,
+  factory: Factory,
 };
 
 export function GithubIcon(props: SVGProps<SVGSVGElement>) {

@@ -65,6 +65,17 @@ function buildKnowledgeBase(): Chunk[] {
   });
 
   chunks.push({
+    id: "why-hire",
+    title: "Why hire Ashwanth?",
+    section: "about",
+    keywords:
+      "why hire should we hire him strengths strength stand out unique differentiator value bring good candidate recommend recruiter pitch summary",
+    text: "production genai regulated domains security first ai full stack ai engineering fine-tuning evals serving",
+    answer: `Three reasons, all from shipped work:\n\n• **Production GenAI in regulated domains**: a compliance-aware RAG system for California Prop 103 insurance rate filings, with a regulatory authority hierarchy and guardrails so outputs cite the governing rule.\n• **Security-first AI**: an LLM security gateway plus a LangGraph red-teaming agent mapped to the OWASP Top 10 for LLMs, benchmarked on attack success, false positives and latency.\n• **End-to-end AI engineering**: QLoRA fine-tuning, execution-based evals, vLLM serving, FastAPI services, Docker and vector search on FAISS, ChromaDB, Pinecone and MongoDB Atlas.\n\n1.5+ years in production, 10 AI & ML systems built.`,
+    followUps: ["What's his strongest project?", "How can I contact him?", "What's his tech stack?"],
+  });
+
+  chunks.push({
     id: "current",
     title: "Current role",
     section: "experience",
@@ -123,7 +134,7 @@ function buildKnowledgeBase(): Chunk[] {
     title: "All projects",
     section: "projects",
     keywords:
-      "projects portfolio list all work built showcase best favorite flagship featured examples case studies",
+      "projects portfolio list all work built showcase best strongest favorite flagship featured examples case studies impressive",
     text: projects.map((p) => `${p.title} ${p.tagline}`).join(" "),
     answer: `He has built 10 AI & ML systems. Highlights:\n\n${projects
       .filter((p) => p.featured)
@@ -412,9 +423,35 @@ function expand(tokens: string[]): Map<string, number> {
   return out;
 }
 
+export const CONFIDENCE_THRESHOLD = 1.2;
+
 export function retrieve(query: string, k = 3): { results: Retrieved[]; tokens: string[] } {
   const weights = expand(tokenize(query));
-  const tokens = [...weights.keys()];
+  const ranked = rank(weights);
+  // keep only chunks reasonably close to the best match
+  const results = ranked.filter((r) => r.score >= ranked[0].score * 0.3).slice(0, k);
+  return { results, tokens: [...weights.keys()] };
+}
+
+/** Step-by-step view of the retrieval pipeline, used by the AI Lab visualizer. */
+export function explain(query: string) {
+  const t0 = performance.now();
+  const raw = tokenize(query);
+  const weights = expand(raw);
+  const ranked = rank(weights);
+  const ms = performance.now() - t0;
+  return {
+    raw,
+    expanded: [...weights].map(([t, w]) => ({ t, w })),
+    ranked: ranked.slice(0, 5),
+    threshold: CONFIDENCE_THRESHOLD,
+    candidates: knowledgeBase.length,
+    ms,
+    reply: ask(query),
+  };
+}
+
+function rank(weights: Map<string, number>): Retrieved[] {
   const N = knowledgeBase.length;
   const k1 = 1.4;
   const b = 0.7;
@@ -434,10 +471,7 @@ export function retrieve(query: string, k = 3): { results: Retrieved[]; tokens: 
     return { chunk, score };
   });
 
-  const ranked = scored.filter((r) => r.score > 0).sort((a, b2) => b2.score - a.score);
-  // keep only chunks reasonably close to the best match
-  const results = ranked.filter((r) => r.score >= ranked[0].score * 0.3).slice(0, k);
-  return { results, tokens };
+  return scored.filter((r) => r.score > 0).sort((a, b2) => b2.score - a.score);
 }
 
 /* ───────────────────────── Tool: skill lookup ───────────────────────── */
@@ -504,6 +538,8 @@ function lookupSkill(q: string): AssistantReply["answer"] | null {
   }`;
 }
 
+const WHY_HIRE = /\bwhy\b[^?]*\b(hire|choose|pick|consider)\b|\bwhy (him|ashwanth)\b|\b(stand out|differentiat\w*|unique about)\b/i;
+
 const HIRING =
   /\b(open to (work|opportunit\w*|new roles?)|hire|hiring|available|availability|looking for (a )?(job|role|opportunit\w*)|recruit\w*|job offer|notice period)\b/i;
 
@@ -543,6 +579,11 @@ export function ask(question: string): AssistantReply {
     );
   }
 
+  if (WHY_HIRE.test(q)) {
+    const c = knowledgeBase.find((x) => x.id === "why-hire")!;
+    return finish(c.answer, [{ chunk: c, score: 1 }], c.followUps ?? [], tokenize(q), "intent: why-hire");
+  }
+
   if (HIRING.test(q)) {
     const c = knowledgeBase.find((x) => x.id === "contact")!;
     return finish(c.answer, [{ chunk: c, score: 1 }], c.followUps ?? [], tokenize(q), "intent: hiring → contact");
@@ -568,7 +609,7 @@ export function ask(question: string): AssistantReply {
   const { results, tokens } = retrieve(q, 3);
   const top = results[0];
 
-  if (!top || top.score < 1.2) {
+  if (!top || top.score < CONFIDENCE_THRESHOLD) {
     return finish(
       `I couldn't find that in ${profile.firstName}'s portfolio — and I'd rather not make something up. Try asking about his experience, projects, skills or education, or email him at ${profile.email}.`,
       results,
@@ -588,7 +629,8 @@ export function ask(question: string): AssistantReply {
 }
 
 export const starterQuestions = [
-  "Who is Ashwanth?",
+  "Why should we hire him?",
+  "What's his strongest project?",
   "What's his tech stack?",
   "Tell me about the LLM security gateway",
   "Has he fine-tuned models?",

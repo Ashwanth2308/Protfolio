@@ -8,7 +8,7 @@ export default defineConfig({
   base: "./",
   plugins: [react(), tailwindcss()],
   build: {
-    // React 19 + Motion in one ~160 kB (gzip) bundle is fine for a portfolio.
-    chunkSizeWarningLimit: 600,
+    // One ~200 kB (gzip) bundle: React 19, Motion and the in-browser AI demos.
+    chunkSizeWarningLimit: 700,
   },
 });

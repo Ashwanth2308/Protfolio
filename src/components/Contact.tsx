@@ -24,7 +24,7 @@ export default function Contact() {
   return (
     <Section
       id="contact"
-      index="06"
+      index="08"
       eyebrow="Contact"
       title={
         <>

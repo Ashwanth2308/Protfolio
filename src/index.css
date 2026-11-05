@@ -104,6 +104,14 @@
     color: var(--fg);
   }
 
+  /* Show code exactly as typed (no "-->" → arrow ligatures in the mono font). */
+  code,
+  pre,
+  textarea,
+  .font-mono {
+    font-variant-ligatures: none;
+  }
+
   :focus-visible {
     outline: 2px solid var(--accent);
     outline-offset: 3px;

@@ -1,6 +1,6 @@
 import { animate, useInView, useReducedMotion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
-import { focusAreas, profile, stats } from "../data/portfolio";
+import { focusAreas, profile, recruiter, stats } from "../data/portfolio";
 import { icons, Reveal, Section, useSpotlight } from "./ui";
 
 function Counter({ value, decimals, suffix }: { value: number; decimals: number; suffix: string }) {
@@ -154,7 +154,21 @@ export default function About() {
           </Reveal>
         </div>
 
-        <div className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <Reveal className="mt-12">
+          <div className="flex flex-wrap items-center gap-2.5">
+            <span className="mr-1 font-mono text-[11px] uppercase tracking-[0.18em] text-subtle">Industries shipped for</span>
+            {recruiter.domains.map((d) => {
+              const Icon = icons[d.icon];
+              return (
+                <span key={d.label} className="inline-flex items-center gap-2 rounded-full border border-line bg-card px-3.5 py-1.5 text-sm text-fg">
+                  <Icon className="size-3.5 text-accent" /> {d.label}
+                </span>
+              );
+            })}
+          </div>
+        </Reveal>
+
+        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {focusAreas.map((f, i) => {
             const Icon = icons[f.icon];
             return (

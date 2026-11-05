@@ -1,35 +1,15 @@
+import { logos, textOnly } from "../data/logos";
 import { skills } from "../data/portfolio";
+import { LogoChip } from "./Logo";
 import { icons, Reveal, Section, useSpotlight } from "./ui";
 
-const marquee = [
-  "Python",
-  "LangChain",
-  "LangGraph",
-  "FastAPI",
-  "OpenAI",
-  "Gemini",
-  "Claude",
-  "Pinecone",
-  "MongoDB Atlas",
-  "FAISS",
-  "ChromaDB",
-  "Hugging Face",
-  "PEFT · QLoRA",
-  "vLLM",
-  "PyTorch",
-  "Docker",
-  "AWS",
-  "LlamaIndex",
-  "LangSmith",
-  "MCP",
-];
 
 export default function Skills() {
   const spot = useSpotlight();
   return (
     <Section
       id="skills"
-      index="04"
+      index="05"
       eyebrow="Toolkit"
       title={
         <>
@@ -70,16 +50,21 @@ export default function Skills() {
         })}
       </div>
 
-      <div className="relative mt-14 overflow-hidden [mask-image:linear-gradient(90deg,transparent,black_12%,black_88%,transparent)]">
-        <div className="flex w-max animate-marquee gap-3 hover:[animation-play-state:paused]">
-          {[...marquee, ...marquee].map((m, i) => (
-            <span
-              key={i}
-              className="rounded-full border border-line bg-card px-4 py-2 font-mono text-xs whitespace-nowrap text-muted"
-              aria-hidden={i >= marquee.length}
-            >
-              {m}
-            </span>
+      <div className="relative mt-14 overflow-hidden py-2 [mask-image:linear-gradient(90deg,transparent,black_10%,black_90%,transparent)]">
+        <div className="flex w-max animate-marquee items-center hover:[animation-play-state:paused]">
+          {[0, 1].map((copy) => (
+            <div key={copy} className="flex items-center gap-3 pr-3" aria-hidden={copy === 1}>
+              {logos.map((l) => (
+                <span key={l.name} className="rounded-xl border border-line bg-card px-4 py-2.5">
+                  <LogoChip name={l.name} showLabel />
+                </span>
+              ))}
+              {textOnly.map((t) => (
+                <span key={t} className="rounded-xl border border-line bg-card px-4 py-2.5 font-mono text-xs whitespace-nowrap text-muted">
+                  {t}
+                </span>
+              ))}
+            </div>
           ))}
         </div>
       </div>

@@ -8,8 +8,12 @@ Built with **React 19 + TypeScript + Vite + Tailwind CSS v4 + Motion**. It's a f
 
 | Feature | What it does |
 | --- | --- |
-| **Ask my AI** | A chatbot that answers questions about Ashwanth. It's a small **RAG system running in the browser**: tokenizer, stemming, synonym expansion, **Okapi BM25** retrieval, a `skill_lookup` tool, intent routing, source citations and a visible "How I answered" retrieval trace. No API calls. |
-| **Live agent traces** | The hero terminal animates illustrative traces of the systems he builds: compliance RAG, an LLM security gateway, red-teaming and fine-tune evals. |
+| **Recruiter quick view** | A 30-second summary panel: key facts, strengths, proof of work, core stack, industries, resume download and a "Copy summary for ATS" button. Opens from the nav, the hero or ⌘K. Share `?recruiter` (e.g. `https://your-site/?recruiter`) to open it directly. |
+| **JD fit check** | Recruiters paste a job description. A skill extractor running in the browser maps every requirement to evidence from the projects, flags transferable skills (e.g. Kubernetes via Docker) and honest gaps, checks years/degree/location, and gives a skill-match score with a one-click "Email Ashwanth about this role". |
+| **AI Lab · guardrail playground** | Try to jailbreak a mini LLM gateway: live scanning for prompt injection, jailbreaks, system-prompt extraction, PII/secrets (with redaction), unsafe tool calls and base64-smuggled payloads, each mapped to the OWASP Top 10 for LLM Applications. |
+| **AI Lab · RAG under the hood** | Watch the assistant's pipeline run step by step: tokenize → query expansion → BM25 retrieval scores → confidence gate → grounded answer. |
+| **Ask my AI** | A chatbot that answers questions about Ashwanth. It's a small **RAG system running in the browser**: tokenizer, stemming, synonym expansion, **Okapi BM25** retrieval, a `skill_lookup` tool, intent routing, source citations and a visible "How I answered" retrieval trace. Voice input where the browser supports it. No API calls. |
+| **Live agent traces** | The hero terminal animates illustrative traces of the systems he builds: compliance RAG, an LLM security gateway, red-teaming and fine-tune evals. Brand logos of the daily stack sit underneath. |
 | **Neural network canvas** | Interactive particle network that reaches toward the cursor. It pauses off-screen and respects `prefers-reduced-motion`. |
 | **Case-study modals** | Each project opens with the problem, a step-by-step architecture diagram, what was built and the stack. Use ← → to move between projects. |
 | **⌘K command palette** | Jump to sections or projects, download the resume, copy the email, switch theme, or ask the AI. Press `/` to open the assistant. |
@@ -26,6 +30,7 @@ The page and the AI assistant's knowledge base are both built from it, so you on
 - Replace `public/Alivelli_Ashwanth_Resume.pdf` to update the downloadable resume (keep the filename, or change `profile.resume`).
 - Add a project: append an object to `projects` and it appears in the grid, the modal, the command palette and the assistant.
 - To tune the assistant's answers, edit `src/lib/assistant.ts`: `buildKnowledgeBase()` holds the answers and `SYNONYMS` holds query expansion.
+- The recruiter panel reads `recruiter` in `portfolio.ts`. The fit check's skill list (including skills you *don't* have, so gaps are honest) lives in `src/lib/fit.ts`. When you learn a new skill, move it from `GAPS` to `HAVE` and list the projects that prove it.
 
 ## Run locally
 
@@ -57,7 +62,10 @@ Then change the `og:image` / `twitter:image` URLs in `index.html` to absolute UR
 ```
 src/
   data/portfolio.ts        ← all site content
-  lib/assistant.ts         ← in-browser RAG: knowledge base, BM25, tools, intents
+  data/logos.ts            ← brand marks (Simple Icons, CC0) for the logo strips
+  lib/assistant.ts         ← in-browser RAG: knowledge base, BM25, tools, intents, explain()
+  lib/fit.ts               ← JD fit analyzer: skill taxonomy, evidence, scoring
+  lib/guardrail.ts         ← mini LLM gateway: detectors, OWASP mapping, redaction
   components/
     Hero.tsx               ← typewriter, CTAs, agent-trace terminal
     AgentTrace.tsx         ← animated LLM pipeline traces
@@ -65,6 +73,9 @@ src/
     About.tsx              ← stats counters, summary, code card, focus areas
     Experience.tsx         ← timeline with expandable project rows
     Projects.tsx           ← filterable project grid
+    AILab.tsx              ← guardrail playground + RAG pipeline inspector
+    FitCheck.tsx           ← paste-a-JD fit report
+    RecruiterView.tsx      ← 30-second recruiter panel
     ProjectModal.tsx       ← case study + architecture diagram
     Skills.tsx             ← skill groups + marquee
     Education.tsx          ← degree + certifications

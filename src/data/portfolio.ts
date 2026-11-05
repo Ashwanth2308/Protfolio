@@ -526,11 +526,61 @@ export const achievements = [
   { title: "IBM", detail: "Python for Data Science", year: "2021", icon: "award" },
 ];
 
+/** Recruiter quick view + hero facts. Keep it factual: every line maps to the resume. */
+export const recruiter = {
+  headline: "AI Engineer building production RAG, AI agents and secure LLM systems",
+  facts: [
+    { label: "Experience", value: "1.5+ yrs production GenAI" },
+    { label: "Current role", value: "Associate AI Engineer, Cygne Noir Cyber" },
+    { label: "Education", value: "B.Tech CSE (Data Science) · CGPA 8.0" },
+    { label: "Location", value: "Hyderabad, India · IST (UTC+5:30)" },
+  ],
+  strengths: [
+    {
+      title: "Production RAG in regulated domains",
+      body: "Compliance-aware RAG for California Prop 103 insurance rate filings, with guardrails that cite the governing regulation.",
+    },
+    {
+      title: "Security-first LLM systems",
+      body: "Real-time guardrail gateway plus a LangGraph red-teaming agent mapped to the OWASP Top 10 for LLMs.",
+    },
+    {
+      title: "End-to-end AI engineering",
+      body: "QLoRA fine-tuning, execution-based evals, vLLM serving, FastAPI services, Docker and four vector stores.",
+    },
+  ],
+  topProjects: ["rate-filing", "gateway", "detection-llm"],
+  coreStack: [
+    "Python",
+    "LangChain",
+    "LangGraph",
+    "FastAPI",
+    "RAG",
+    "AI Agents",
+    "OpenAI · Gemini · Claude",
+    "Pinecone · FAISS · Atlas",
+    "QLoRA / PEFT",
+    "vLLM",
+    "Docker",
+    "AWS",
+  ],
+  domains: [
+    { label: "Cybersecurity", icon: "shield" },
+    { label: "Regulated insurance (P&C)", icon: "scale" },
+    { label: "Consumer apps", icon: "heart" },
+    { label: "Manufacturing ML", icon: "factory" },
+  ],
+};
+
 export const navLinks = [
   { id: "about", label: "About" },
   { id: "experience", label: "Experience" },
   { id: "projects", label: "Projects" },
+  { id: "lab", label: "AI Lab" },
   { id: "skills", label: "Skills" },
-  { id: "education", label: "Education" },
+  { id: "fit", label: "Fit check" },
   { id: "contact", label: "Contact" },
 ];
+
+/** Extra sections reachable from the command palette. */
+export const extraSections = [{ id: "education", label: "Education" }];

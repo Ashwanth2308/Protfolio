@@ -1,10 +1,19 @@
 import { motion, useReducedMotion } from "motion/react";
-import { ArrowRight, Download, MapPin, Sparkles } from "lucide-react";
+import { ArrowRight, BookOpenCheck, Download, Gauge, Mail, MapPin, ShieldCheck, Sparkles, Timer } from "lucide-react";
 import { useEffect, useState } from "react";
 import { profile } from "../data/portfolio";
 import AgentTrace from "./AgentTrace";
 import NeuralBackground from "./NeuralBackground";
+import { LogoChip } from "./Logo";
 import { GithubIcon, LinkedinIcon, useUI } from "./ui";
+
+const heroLogos = ["Python", "LangChain", "LangGraph", "FastAPI", "Gemini", "Claude", "Hugging Face", "PyTorch", "MongoDB", "Docker"];
+
+const floatBadges = [
+  { text: "OWASP LLM Top 10", sub: "guardrails · red-teaming", icon: <ShieldCheck className="size-3.5" />, tone: "bg-danger/15 text-danger", pos: "-top-14 right-6" },
+  { text: "Cited, compliant answers", sub: "Prop 103 RAG", icon: <BookOpenCheck className="size-3.5" />, tone: "bg-ok/15 text-ok", pos: "-bottom-16 left-2" },
+  { text: "QLoRA 7B → vLLM", sub: "fine-tune · eval · serve", icon: <Gauge className="size-3.5" />, tone: "bg-accent-2/15 text-accent-2", pos: "-bottom-16 right-2" },
+];
 
 function useTypewriter(words: string[], { type = 70, erase = 35, hold = 1600 } = {}) {
   const reduce = useReducedMotion();
@@ -35,7 +44,7 @@ function useTypewriter(words: string[], { type = 70, erase = 35, hold = 1600 } =
 const ease = [0.22, 1, 0.36, 1] as const;
 
 export default function Hero() {
-  const { openChat } = useUI();
+  const { openChat, openRecruiter } = useUI();
   const role = useTypewriter(profile.roles);
   const reduce = useReducedMotion();
   const fade = (d: number) =>
@@ -105,26 +114,42 @@ export default function Hero() {
               <Sparkles className="size-4 text-accent" />
               Ask my AI
             </button>
-            <a
-              href={`./${profile.resume}`}
-              download
-              className="inline-flex items-center gap-2 rounded-xl px-3 py-3 text-sm font-medium text-muted transition-colors hover:text-fg"
+            <button
+              onClick={openRecruiter}
+              className="group inline-flex items-center gap-2 rounded-xl px-3 py-3 text-sm font-semibold text-muted transition-colors hover:text-fg"
             >
-              <Download className="size-4" /> Resume
-            </a>
+              <Timer className="size-4 text-accent-2" />
+              Recruiter? 30-sec view
+            </button>
           </motion.div>
 
-          <motion.div {...fade(0.5)} className="mt-9 flex items-center gap-5 text-subtle">
+          <motion.div {...fade(0.5)} className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-3 text-subtle">
             <a href={profile.socials.github} target="_blank" rel="noreferrer" className="transition-colors hover:text-fg" aria-label="GitHub">
               <GithubIcon className="size-5" />
             </a>
             <a href={profile.socials.linkedin} target="_blank" rel="noreferrer" className="transition-colors hover:text-fg" aria-label="LinkedIn">
               <LinkedinIcon className="size-5" />
             </a>
-            <span className="h-px w-10 bg-line-strong" />
-            <a href={`mailto:${profile.email}`} className="font-mono text-xs transition-colors hover:text-fg">
-              {profile.email}
+            <a href={`mailto:${profile.email}`} className="transition-colors hover:text-fg" aria-label="Email">
+              <Mail className="size-5" />
             </a>
+            <span className="h-px w-8 bg-line-strong" />
+            <a
+              href={`./${profile.resume}`}
+              download
+              className="inline-flex items-center gap-1.5 font-mono text-xs text-muted transition-colors hover:text-fg"
+            >
+              <Download className="size-3.5" /> resume.pdf
+            </a>
+          </motion.div>
+
+          <motion.div {...fade(0.6)} className="mt-10 border-t border-line pt-6">
+            <p className="mb-4 font-mono text-[10.5px] uppercase tracking-[0.2em] text-subtle">Daily drivers</p>
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-4">
+              {heroLogos.map((n) => (
+                <LogoChip key={n} name={n} />
+              ))}
+            </div>
           </motion.div>
         </div>
 
@@ -136,26 +161,31 @@ export default function Hero() {
         >
           <div className="absolute -inset-6 -z-10 rounded-[2rem] bg-gradient-to-br from-accent/15 via-transparent to-accent-2/15 blur-2xl" />
           <AgentTrace />
+          {floatBadges.map((b, i) => (
+            <motion.div
+              key={b.text}
+              className={`absolute z-10 hidden items-center gap-2 rounded-xl border border-line-strong bg-elev/90 px-3 py-2 text-xs text-fg shadow-xl shadow-black/30 backdrop-blur-xl xl:flex light:shadow-slate-300/50 ${b.pos}`}
+              initial={reduce ? false : { opacity: 0, scale: 0.9 }}
+              animate={reduce ? { opacity: 1 } : { opacity: 1, scale: 1, y: [0, -6, 0] }}
+              transition={{
+                opacity: { delay: 1 + i * 0.2 },
+                scale: { delay: 1 + i * 0.2 },
+                y: { duration: 4 + i, repeat: Infinity, ease: "easeInOut", delay: i * 0.6 },
+              }}
+            >
+              <span className={`grid size-6 place-items-center rounded-lg ${b.tone}`}>{b.icon}</span>
+              <span>
+                <span className="block font-medium leading-tight">{b.text}</span>
+                <span className="block font-mono text-[10px] text-subtle">{b.sub}</span>
+              </span>
+            </motion.div>
+          ))}
           <p className="mt-3 text-center font-mono text-[11px] text-subtle">
             illustrative traces of systems I've built · hover to pause
           </p>
         </motion.div>
       </div>
 
-      <a
-        href="#about"
-        className="absolute bottom-6 left-1/2 hidden -translate-x-1/2 flex-col items-center gap-2 font-mono text-[10px] uppercase tracking-[0.25em] text-subtle transition-colors hover:text-fg md:flex"
-        aria-label="Scroll to About"
-      >
-        scroll
-        <span className="relative h-9 w-5 rounded-full border border-line-strong">
-          <motion.span
-            className="absolute left-1/2 top-1.5 size-1 -translate-x-1/2 rounded-full bg-accent"
-            animate={reduce ? undefined : { y: [0, 14, 0], opacity: [1, 0.2, 1] }}
-            transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
-          />
-        </span>
-      </a>
     </section>
   );
 }

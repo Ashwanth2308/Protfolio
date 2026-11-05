@@ -1,5 +1,5 @@
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { ArrowUp, ChevronDown, CornerDownRight, RotateCcw, Sparkles, X } from "lucide-react";
+import { ArrowUp, ChevronDown, CornerDownRight, Mic, RotateCcw, Sparkles, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { profile } from "../data/portfolio";
 import { ask, starterQuestions, type AssistantReply } from "../lib/assistant";
@@ -79,6 +79,8 @@ export default function AskAI({
     },
     [busy, reduce, scrollDown],
   );
+
+  const voice = useVoice((text) => send(text), setInput);
 
   // handle questions passed in from elsewhere on the page
   useEffect(() => {
@@ -229,6 +231,19 @@ export default function AskAI({
                   aria-label="Your question"
                   maxLength={300}
                 />
+                {voice.supported && (
+                  <button
+                    type="button"
+                    onClick={voice.listening ? voice.stop : voice.start}
+                    className={`grid size-9 shrink-0 place-items-center rounded-xl border transition-colors ${
+                      voice.listening ? "animate-pulse border-danger/60 bg-danger/15 text-danger" : "border-line text-subtle hover:text-fg"
+                    }`}
+                    aria-label={voice.listening ? "Stop voice input" : "Ask by voice"}
+                    title={voice.listening ? "Listening… click to stop" : "Ask by voice"}
+                  >
+                    <Mic className="size-4" />
+                  </button>
+                )}
                 <button
                   type="submit"
                   disabled={!input.trim() || busy}
@@ -340,4 +355,58 @@ function Bubble({ m, onSource }: { m: Msg; onSource: (section: string) => void }
       </div>
     </motion.div>
   );
+}
+
+/* ───────── Voice input (Web Speech API, where the browser supports it) ───────── */
+type SpeechRec = {
+  lang: string;
+  interimResults: boolean;
+  continuous: boolean;
+  onresult: ((e: { results: ArrayLike<ArrayLike<{ transcript: string }> & { isFinal: boolean }> }) => void) | null;
+  onend: (() => void) | null;
+  onerror: (() => void) | null;
+  start: () => void;
+  stop: () => void;
+};
+
+function useVoice(onFinal: (text: string) => void, onInterim: (text: string) => void) {
+  const Ctor =
+    typeof window !== "undefined"
+      ? ((window as unknown as { SpeechRecognition?: new () => SpeechRec; webkitSpeechRecognition?: new () => SpeechRec }).SpeechRecognition ??
+        (window as unknown as { webkitSpeechRecognition?: new () => SpeechRec }).webkitSpeechRecognition)
+      : undefined;
+  const [listening, setListening] = useState(false);
+  const rec = useRef<SpeechRec | null>(null);
+  const finalRef = useRef(onFinal);
+  const interimRef = useRef(onInterim);
+  finalRef.current = onFinal;
+  interimRef.current = onInterim;
+
+  const start = useCallback(() => {
+    if (!Ctor) return;
+    const r = new Ctor();
+    r.lang = "en-IN";
+    r.interimResults = true;
+    r.continuous = false;
+    r.onresult = (e) => {
+      const res = Array.from(e.results);
+      const text = res.map((x) => x[0].transcript).join(" ");
+      if (res[res.length - 1]?.isFinal) finalRef.current(text);
+      else interimRef.current(text);
+    };
+    r.onend = () => setListening(false);
+    r.onerror = () => setListening(false);
+    rec.current = r;
+    setListening(true);
+    r.start();
+  }, [Ctor]);
+
+  const stop = useCallback(() => {
+    rec.current?.stop();
+    setListening(false);
+  }, []);
+
+  useEffect(() => () => rec.current?.stop(), []);
+
+  return { supported: !!Ctor, listening, start, stop };
 }
