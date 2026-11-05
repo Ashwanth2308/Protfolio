@@ -301,7 +301,7 @@ function buildKnowledgeBase(): Chunk[] {
     id: "assistant",
     title: "About this assistant",
     section: "about",
-    keywords: "how do you work this assistant chatbot bot you rag bm25 built how are you made llm gpt api",
+    keywords: "this assistant chatbot bot built made gpt",
     text: "in-browser retrieval augmented generation BM25 knowledge base no api",
     answer: `I'm a tiny RAG system running entirely in your browser. Your question is tokenized, stemmed and expanded with synonyms, then I score a knowledge base built from Ashwanth's portfolio with Okapi BM25 and answer from the best-matching chunk — with sources. No API keys, no servers. Open "How I answered" under any reply to see the retrieval trace.`,
     followUps: ["Who is Ashwanth?", "What's his tech stack?"],

@@ -1,8 +1,9 @@
 import { AnimatePresence, motion } from "motion/react";
-import { Copy, CornerDownLeft, Download, FileText, Hash, Mail, Moon, ScanSearch, Search, ShieldHalf, Sparkles, Timer } from "lucide-react";
+import { Copy, CornerDownLeft, Download, FileText, Hash, Mail, Moon, ScanSearch, Search, Sparkles, Timer } from "lucide-react";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { extraSections, navLinks, profile, projects } from "../data/portfolio";
 import { useLockBody } from "../hooks/hooks";
+import { demos } from "./AILab";
 import { GithubIcon, LinkedinIcon } from "./ui";
 
 type Item = { id: string; group: string; label: string; hint?: string; icon: ReactNode; run: () => void };
@@ -33,7 +34,16 @@ export default function CommandPalette({
     return [
       { id: "recruiter", group: "For recruiters", label: "30-second recruiter view", icon: <Timer className="size-4" />, run: onOpenRecruiter },
       { id: "fit", group: "For recruiters", label: "Check fit against a job description", icon: <ScanSearch className="size-4" />, run: go("fit") },
-      { id: "lab", group: "For recruiters", label: "Try the guardrail playground", icon: <ShieldHalf className="size-4" />, run: go("lab") },
+      ...demos.map((d) => ({
+        id: `lab-${d.id}`,
+        group: "AI Lab",
+        label: d.title,
+        hint: d.tag,
+        icon: <d.icon className="size-4" />,
+        run: () => {
+          window.location.hash = `lab/${d.id}`;
+        },
+      })),
       ...[...navLinks, ...extraSections].map((l) => ({ id: `nav-${l.id}`, group: "Navigate", label: l.label, icon: <Hash className="size-4" />, run: go(l.id) })),
       ...projects.map((p) => ({
         id: `proj-${p.id}`,

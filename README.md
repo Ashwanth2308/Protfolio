@@ -11,6 +11,11 @@ Built with **React 19 + TypeScript + Vite + Tailwind CSS v4 + Motion**. It's a f
 | **Recruiter quick view** | A 30-second summary panel: key facts, strengths, proof of work, core stack, industries, resume download and a "Copy summary for ATS" button. Opens from the nav, the hero or ⌘K. Share `?recruiter` (e.g. `https://your-site/?recruiter`) to open it directly. |
 | **JD fit check** | Recruiters paste a job description. A skill extractor running in the browser maps every requirement to evidence from the projects, flags transferable skills (e.g. Kubernetes via Docker) and honest gaps, checks years/degree/location, and gives a skill-match score with a one-click "Email Ashwanth about this role". |
 | **AI Lab · guardrail playground** | Try to jailbreak a mini LLM gateway: live scanning for prompt injection, jailbreaks, system-prompt extraction, PII/secrets (with redaction), unsafe tool calls and base64-smuggled payloads, each mapped to the OWASP Top 10 for LLM Applications. |
+| **AI Lab · Agent workbench** | A tool-using agent drawn as a LangGraph-style graph: guardrail → planner → tools (`search_portfolio`, `skill_lookup`, `fit_check`, `get_contact`) → synthesize. Nodes light up as it runs, with a full execution trace. The planner is rule-based; the tools are real. |
+| **AI Lab · Chunking lab** | Recursive / sentence / fixed / paragraph chunking with size and overlap sliders, chunks highlighted in the document, and BM25 retrieval over the chunks to show how chunking changes what gets retrieved. |
+| **AI Lab · Decoding lab** | Temperature, top-k and top-p applied to a next-token distribution (real softmax + nucleus math, illustrative logits), with sampling and entropy. |
+| **AI Lab · Matchmaking engine** | Two-stage recommender modeled on Nudr: cosine retrieval → re-rank on distance and recency (adjustable weights) → likes/skips update a preference vector shown as a radar. Synthetic profiles. |
+| **AI Lab · Live failure prediction** | Streaming sensor charts (10 Hz) with fault injection, rolling-window features, a failure-risk score and an event log, modeled on the CNC project. |
 | **AI Lab · RAG under the hood** | Watch the assistant's pipeline run step by step: tokenize → query expansion → BM25 retrieval scores → confidence gate → grounded answer. |
 | **Ask my AI** | A chatbot that answers questions about Ashwanth. It's a small **RAG system running in the browser**: tokenizer, stemming, synonym expansion, **Okapi BM25** retrieval, a `skill_lookup` tool, intent routing, source citations and a visible "How I answered" retrieval trace. Voice input where the browser supports it. No API calls. |
 | **Live agent traces** | The hero terminal animates illustrative traces of the systems he builds: compliance RAG, an LLM security gateway, red-teaming and fine-tune evals. Brand logos of the daily stack sit underneath. |
@@ -66,6 +71,8 @@ src/
   lib/assistant.ts         ← in-browser RAG: knowledge base, BM25, tools, intents, explain()
   lib/fit.ts               ← JD fit analyzer: skill taxonomy, evidence, scoring
   lib/guardrail.ts         ← mini LLM gateway: detectors, OWASP mapping, redaction
+  lib/agent.ts             ← graph agent: planner + tools built on the engines above
+  lib/chunk.ts             ← chunking strategies + BM25 over chunks
   components/
     Hero.tsx               ← typewriter, CTAs, agent-trace terminal
     AgentTrace.tsx         ← animated LLM pipeline traces
@@ -73,7 +80,8 @@ src/
     About.tsx              ← stats counters, summary, code card, focus areas
     Experience.tsx         ← timeline with expandable project rows
     Projects.tsx           ← filterable project grid
-    AILab.tsx              ← guardrail playground + RAG pipeline inspector
+    AILab.tsx              ← lab launcher (7 playgrounds, lazy-loaded; deep links via #lab/<id>)
+    lab/*.tsx              ← AgentLab, GuardrailLab, RagLab, ChunkLab, DecodeLab, RecsysLab, StreamLab
     FitCheck.tsx           ← paste-a-JD fit report
     RecruiterView.tsx      ← 30-second recruiter panel
     ProjectModal.tsx       ← case study + architecture diagram
